@@ -1,0 +1,20 @@
+Crocosphaera:
+    keep:
+        genus:
+            - Crocosphaera
+Prochlorococcus:
+    keep:
+        family:
+            - Cyanobiaceae
+    drop:
+        genus:
+            - Synechococcus_C
+            - Vulcanococcus
+            - Unknown
+            - Synechococcus_D
+            - PCC7001
+            - RCC307
+            - BAIKAL-G1
+            - Cyanobium
+            - Synechococcus_B
+            - WH-5701
