@@ -59,7 +59,8 @@ compar_keys = ['SURF_L2vsL1', 'DCM_L2vsL1', 'L1_SURFvsDCM', 'L2_SURFvsDCM']
 import_comp = ['SURF_L2vsL1', 'DCM_L2vsL1']
 
 ranks = ['species', 'genus', 'family', 'order', 'class', 'phylum']
-annot_for_analysis = ranks + ['function', 'COG', 'EGGNOG', 'KEGG', 'PFAM', 'TIGRFAM']
+other_annots = ['function', 'COG', 'EGGNOG', 'KEGG', 'PFAM', 'TIGRFAM']
+annot_for_analysis = ranks + other_annots
 
 
 def main():
@@ -152,14 +153,29 @@ def pdf_plots(tax_name, tax_counts_file, pdf_file, rank='genus'):
                              if len(annot_color_indexes[annot]) > 1
                             } 
 
+    # open the PDF file for plotting
     pdf = PdfPages(pdf_file)
 
-    for annot, annot_table in SumPerAnnot_norm_data.items():
+    # plot the normalized totals grouped y taxon for various ranks
+    for annot in ranks:
+        if annot not in SumPerAnnot_genus_norm_data:
+            # skip anything with only one value
+            continue
+        annot_table = SumPerAnnot_norm_data[annot]
         f = barplot_per_annot(annot, annot_table, time_courses, data_columns,
                                           figsize=[20,16])
         pdf.savefig(bbox_inches='tight')
         plt.close()
 
+    # plot the normalized totals: one quartet of bar plots per annotation column
+    for annot in other_annots:
+        annot_table = SumPerAnnot_genus_norm_data[annot]
+        f = barplot_per_annot(annot, annot_table, time_courses, data_columns,
+                                          figsize=[20,16])
+        pdf.savefig(bbox_inches='tight')
+        plt.close()
+
+    # line plots of the normalized and genus-normalized data 
     f = line_plots(Norm_filter_taxa_data_annot, genus_norm_exp_data_annot, 
                                time_courses, rank, name=tax_name, figsize=[16,20])
     pdf.savefig(bbox_inches='tight')
@@ -259,6 +275,9 @@ def load_meta_data(CruiseSamp_metaD_file):
 def barplot_per_annots(SumPerAnnot_norm_data, 
                       time_courses,
                       data_columns):
+    """
+    Creates multiple figures, one for each annoation column. Best for use in Jupyter to generate multiple figures quickly
+    """
     for annot in SumPerAnnot_norm_data:
         annot_expression_data =  SumPerAnnot_norm_data[annot].copy()
         barplot_per_annot(annot, annot_expression_data,
@@ -267,9 +286,9 @@ def barplot_per_annots(SumPerAnnot_norm_data,
 
 def barplot_per_annot(annot, annot_expression_data,
                       time_courses, data_columns, figsize=[30,20], ):
-
-    annot_expression_data['sum'] = annot_expression_data[data_columns].sum(1)
-
+    """
+    Generates a single barplot for the given annotation. Sutiable for creating a single DF page.
+    """
 
     annot_expression_data['sum'] = annot_expression_data[data_columns].sum(1)
 
