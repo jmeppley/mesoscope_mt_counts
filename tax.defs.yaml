@@ -18,3 +18,11 @@ Prochlorococcus:
             - Cyanobium
             - Synechococcus_B
             - WH-5701
+Dizotrophs:
+    keep:
+        genus:
+          - Crocosphaera
+          - Richellia
+        KEGG:
+          - K01915
+          - K04068

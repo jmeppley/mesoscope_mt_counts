@@ -91,6 +91,7 @@ def get_taxon_definitions(taxon_definitions_file):
                 - Cyanobium
                 - Synechococcus_B
                 - WH-5701
+    
     """
     with open(taxon_definitions_file) as yaml_in:
         tax_defs = yaml.load(yaml_in, Loader=yaml.SafeLoader)
@@ -114,20 +115,26 @@ def filter_by_taxon(hit_counts_annot, taxa_to_keep, taxa_to_drop):
     taxa_to_keep = _check_tax_def_format(taxa_to_keep)
     taxa_to_drop = _check_tax_def_format(taxa_to_drop)
 
-    keep_query_string = " and ".join(f'{rank} == "{name}"'
-                                     for rank in taxa_to_keep
-                                     for name in taxa_to_keep[rank]
-                                    )
-    drop_query_string = " and ".join(f'{rank} != "{name}"'
-                                     for rank in taxa_to_drop
-                                     for name in taxa_to_drop[rank]
-                                    )
+    keep_query_string = " and ".join(
+        f"({q})" 
+        for q in (" or " .join(f'{rank} == "{name}"'
+                               for name in taxa_to_keep[rank])
+                  for rank in taxa_to_keep)
+    )
+    drop_query_string = " and ".join(
+        f"not ({q})" 
+        for q in (" or " .join(f'{rank} == "{name}"'
+                               for name in taxa_to_drop[rank])
+                  for rank in taxa_to_drop)
+    )
 
     # let's assume the keep list is nonzero, but check the drop list
     if len(drop_query_string) > 0:
         query_string = keep_query_string + " and " + drop_query_string
     else:
         query_string = keep_query_string
+
+    print(query_string)
 
     # run the query and return the filtered result
     return hit_counts_annot.query(query_string)
